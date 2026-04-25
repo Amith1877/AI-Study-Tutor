@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Tutor</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0e0e0f;
+      --surface:  #17171a;
+      --border:   #2a2a2e;
+      --accent:   #c8a96e;
+      --accent2:  #7e6bab;
+      --user-bg:  #1f1d2e;
+      --bot-bg:   #1a1a1d;
+      --text:     #e8e4dc;
+      --muted:    #6b6872;
+      --tag:      #252428;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: var(--accent);
+      letter-spacing: -0.3px;
+    }
+
+    .logo span {
+      font-style: italic;
+      color: var(--text);
+    }
+
+    .sidebar-body {
+      flex: 1;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      overflow-y: auto;
+    }
+
+    .upload-section label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .upload-zone {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: rgba(200, 169, 110, 0.04);
+    }
+
+    .upload-zone .up-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--tag);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+    }
+
+    .upload-zone .up-icon svg {
+      width: 16px; height: 16px;
+      stroke: var(--accent); fill: none; stroke-width: 1.5;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .upload-zone p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .upload-zone strong { font-size: 12px; color: var(--text); font-weight: 500; }
+
+    input[type="file"] { display: none; }
+
+    .file-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--tag);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .file-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #7ec89e; flex-shrink: 0; }
+    .file-pill .fname { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .file-pill .rem { font-size: 11px; color: var(--muted); cursor: pointer; flex-shrink: 0; }
+    .file-pill .rem:hover { color: #e27b7b; }
+
+    .upload-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .upload-btn:hover { background: var(--tag); border-color: var(--accent); color: var(--accent); }
+    .upload-btn.done { color: #7ec89e; border-color: #7ec89e44; pointer-events: none; }
+
+    .sidebar-divider { height: 1px; background: var(--border); }
+
+    .hint-section label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .hint-chips { display: flex; flex-direction: column; gap: 6px; }
+
+    .chip {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--tag);
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+
+    .chip:hover { border-color: var(--accent2); color: var(--text); background: #1e1d2a; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .reset-btn:hover { border-color: #e27b7b44; color: #e27b7b; }
+
+    /* ---- CHAT AREA ---- */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #7ec89e;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .welcome {
+      text-align: center;
+      margin: auto;
+      padding: 2rem 1rem;
+    }
+
+    .welcome .big-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 22px;
+    }
+
+    .welcome h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .welcome p { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 300px; margin: 0 auto; }
+
+    .message { display: flex; flex-direction: column; gap: 4px; animation: msgIn 0.2s ease; }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { align-items: flex-end; }
+    .message.bot  { align-items: flex-start; }
+
+    .msg-meta {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0 4px;
+    }
+
+    .bubble {
+      max-width: 72%;
+      padding: 11px 15px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .message.user .bubble {
+      background: var(--user-bg);
+      border: 1px solid #312e4a;
+      border-bottom-right-radius: 4px;
+      color: #d4cfec;
+    }
+
+    .message.bot .bubble {
+      background: var(--bot-bg);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+
+    .typing-bubble {
+      background: var(--bot-bg);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-bubble span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: blink 1.2s infinite;
+    }
+
+    .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 60%, 100% { opacity: 0.2; }
+      30% { opacity: 1; }
+    }
+
+    /* ---- INPUT BAR ---- */
+    .input-bar {
+      padding: 1rem 1.5rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+    }
+
+    .input-wrap:focus-within { border-color: var(--accent2); }
+
+    #question {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      max-height: 120px;
+      scrollbar-width: none;
+    }
+
+    #question::placeholder { color: var(--muted); }
+    #question::-webkit-scrollbar { display: none; }
+
+    .send-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:active { transform: scale(0.93); }
+
+    .send-btn svg {
+      width: 15px; height: 15px;
+      stroke: #1a1000; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .send-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+    .input-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 7px;
+      padding-left: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">Study<span>Tutor</span></div>
+  </div>
+
+  <div class="sidebar-body">
+    <div class="upload-section">
+      <label>Document</label>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="up-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12M8 8l4-4 4 4"/></svg>
+        </div>
+        <strong>Choose a PDF</strong>
+        <p>Upload your notes or textbook</p>
+      </div>
+      <div class="file-pill" id="filePill">
+        <div class="dot"></div>
+        <span class="fname" id="fileName"></span>
+        <span class="rem" onclick="removeFile()">✕</span>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf" onchange="handleFile(this)">
+      <button class="upload-btn" id="uploadBtn" onclick="uploadFile()">Upload document</button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="hint-section">
+      <label>Try asking</label>
+      <div class="hint-chips">
+        <div class="chip" onclick="useChip(this)">Summarise the key points</div>
+        <div class="chip" onclick="useChip(this)">Explain this concept simply</div>
+        <div class="chip" onclick="useChip(this)">What are the main topics covered?</div>
+        <div class="chip" onclick="useChip(this)">Give me 5 quiz questions</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="reset-btn" onclick="resetChat()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.47"/></svg>
+      New conversation
+    </button>
+  </div>
+</aside>
+
+<!-- CHAT -->
+<main class="chat-area">
+  <header class="chat-header">
+    <h2>Ask your tutor</h2>
+    <div class="status-dot">Ready</div>
+  </header>
+
+  <div class="messages" id="messages">
+    <div class="welcome" id="welcome">
+      <div class="big-icon">📚</div>
+      <h3>Hello, let's study.</h3>
+      <p>Upload a PDF and ask me anything about it. I'll explain it like a teacher.</p>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <div class="input-wrap">
+      <textarea id="question" rows="1" placeholder="Ask anything from your notes..."></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Press Enter to send &nbsp;·&nbsp; Shift+Enter for new line</div>
+  </div>
+</main>
+
+<script>
+  const messagesEl = document.getElementById('messages');
+  const questionEl = document.getElementById('question');
+  const sendBtn    = document.getElementById('sendBtn');
+
+  // Auto-resize textarea
+  questionEl.addEventListener('input', () => {
+    questionEl.style.height = 'auto';
+    questionEl.style.height = Math.min(questionEl.scrollHeight, 120) + 'px';
+  });
+
+  questionEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  function useChip(el) {
+    questionEl.value = el.textContent;
+    questionEl.focus();
+  }
+
+  function addMessage(role, text) {
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = `message ${role}`;
+
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.textContent = role === 'user' ? 'You' : 'Tutor';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+
+    wrap.appendChild(meta);
+    wrap.appendChild(bubble);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return wrap;
+  }
+
+  function addTyping() {
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'message bot';
+    wrap.id = 'typing';
+
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.textContent = 'Tutor';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'typing-bubble';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+
+    wrap.appendChild(meta);
+    wrap.appendChild(bubble);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return wrap;
+  }
+
+  async function sendMessage() {
+    const q = questionEl.value.trim();
+    if (!q) return;
+
+    questionEl.value = '';
+    questionEl.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    addMessage('user', q);
+    const typingEl = addTyping();
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+      const data = await res.json();
+      typingEl.remove();
+      addMessage('bot', data.answer);
+    } catch {
+      typingEl.remove();
+      addMessage('bot', 'Something went wrong. Please try again.');
+    }
+
+    sendBtn.disabled = false;
+  }
+
+  async function resetChat() {
+    await fetch('/reset', { method: 'POST' });
+    messagesEl.innerHTML = `
+      <div class="welcome" id="welcome">
+        <div class="big-icon">📚</div>
+        <h3>Hello, let's study.</h3>
+        <p>Upload a PDF and ask me anything about it. I'll explain it like a teacher.</p>
+      </div>`;
+  }
+
+  // File upload
+  function handleFile(input) {
+    if (!input.files.length) return;
+    document.getElementById('fileName').textContent = input.files[0].name;
+    document.getElementById('filePill').style.display = 'flex';
+    document.getElementById('uploadZone').style.display = 'none';
+  }
+
+  function removeFile() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePill').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'flex';
+    const btn = document.getElementById('uploadBtn');
+    btn.textContent = 'Upload document';
+    btn.className = 'upload-btn';
+  }
+
+  async function uploadFile() {
+    const input = document.getElementById('fileInput');
+    if (!input.files.length) { alert('Select a file first.'); return; }
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    await fetch('/upload', { method: 'POST', body: formData });
+    const btn = document.getElementById('uploadBtn');
+    btn.textContent = 'Document ready';
+    btn.className = 'upload-btn done';
+  }
+
+  // Drag and drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+  zone.addEventListener('dragleave', () => zone.style.borderColor = '');
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = '';
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      document.getElementById('fileInput').files = dt.files;
+      handleFile(document.getElementById('fileInput'));
+    }
+  });
+</script>
+
+</body>
+</html>
